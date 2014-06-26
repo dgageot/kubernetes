@@ -47,8 +47,7 @@ trap "rm -rf ${KUBE_TEMP}" EXIT
 
 get-password
 echo "Using password: $user:$passwd"
-htpasswd -b -c ${KUBE_TEMP}/htpasswd $user $passwd
-HTPASSWD=$(cat ${KUBE_TEMP}/htpasswd)
+HTPASSWD=$(htpasswd -b -n $user $passwd)
 
 (
   echo "#! /bin/bash"
