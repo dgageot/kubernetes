@@ -47,8 +47,22 @@ trap "rm -rf ${KUBE_TEMP}" EXIT
 
 get-password
 echo "Using password: $user:$passwd"
-htpasswd -b -c ${KUBE_TEMP}/htpasswd $user $passwd
-HTPASSWD=$(cat ${KUBE_TEMP}/htpasswd)
+
+# Deal with OSX 10.10 that doesn't have htpasswd installed
+if [ "$(which htpasswd)" == "" ]; then
+	if [ "$(which docker)" == "" ]; then
+	    echo "htpasswd is not available. We could use a docker container as a workaround if you had it installed."
+	    exit 1
+	fi
+
+	echo "htpasswd is not available. Using a docker container as a replacement"
+	HTPASSWD=$(docker run --rm dgageot/htpasswd -b -n $user $passwd)
+else
+	htpasswd -b -c ${KUBE_TEMP}/htpasswd $user $passwd
+	HTPASSWD=$(cat ${KUBE_TEMP}/htpasswd)
+	# might be replaced with a oneliner but one has to check that it works on OSX < 10.10
+	# HTPASSWD=$(htpasswd -b -n $user $passwd)
+fi
 
 (
   echo "#! /bin/bash"
